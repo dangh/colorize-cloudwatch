@@ -21,7 +21,7 @@ colorize = () => {
 			let color;
 			if ( logMessageText.indexOf('INFO') !== -1 ) {
 				color = InfoColor;
-			} else if ( logMessageText.indexOf('WARNING') !== -1 ) {
+			} else if ( logMessageText.indexOf('WARN') !== -1 ) {
 				color = WarningColor;
 			} else if ( logMessageText.indexOf('ERROR') !== -1 ) {
 				color = ErrorColor;
