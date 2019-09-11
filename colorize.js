@@ -4,37 +4,53 @@
  * http://github.com/yusufff
  */
 
-const WarningColor = '#FFCC80',
-			InfoColor = '#81D4FA',
-			DebugColor = '#B0BEC5',
-			ErrorColor = '#EF9A9A';
-
-colorize = () => {
-	const logGroups = document.querySelectorAll('.cwdb-log-viewer-table-row-group:not(.colored)');
-
-	if ( logGroups.length === 0 ) return false;
-
-	logGroups.forEach(log => {
-		const logMessage = log.querySelector('.cwdb-log-viewer-table-column-message');
-		if ( logMessage ) {
-			const logMessageText = logMessage.innerText;
-			let color;
-			if ( logMessageText.indexOf('INFO') !== -1 ) {
-				color = InfoColor;
-			} else if ( logMessageText.indexOf('WARN') !== -1 ) {
-				color = WarningColor;
-			} else if ( logMessageText.indexOf('ERROR') !== -1 ) {
-				color = ErrorColor;
-			} else if ( logMessageText.indexOf('DEBUG') !== -1 ) {
-				color = DebugColor;
-			}
-
-			log.classList.add('colored');
-			log.style.backgroundColor = color;
-		}
-	})
+function poll(timeout, task, interval = 100) {
+  return new Promise(resolve => {
+    let result;
+    let intervalTimer = setInterval(() => {
+      if (result = task()) {
+        resolve([null, result]);
+        clearInterval(intervalTimer);
+        clearTimeout(timeoutTimer)
+      }
+    }, interval);
+    let timeoutTimer = setTimeout(() => {
+      resolve([new Error('Timeout')]);
+      clearInterval(intervalTimer);
+    }, timeout);
+  });
 }
 
-const colorizeInterval = setInterval(() => {
-	window.requestAnimationFrame(colorize);
-}, 1000)
+function observe(target, handler) {
+  let config = {};
+  for (let type in handler) config[type] = true;
+
+  let observer = new MutationObserver((mutations, observer) => {
+    for (let mutation of mutations) {
+      if (typeof handler[mutation.type] == 'function') {
+        handler[mutation.type](mutation, observer);
+      }
+    }
+  });
+
+  observer.observe(target, config);
+}
+
+async function colorize() {
+  let [err, logTable] = await poll(5000, () => document.querySelector('.cwdb-log-viewer-table-body'));
+  if (err) return console.error('Log table not found:', err);
+
+  observe(logTable, {
+    childList(mutation) {
+      for (let logGroup of mutation.addedNodes) {
+        let logMessage = logGroup.querySelector('.cwdb-log-viewer-table-column-message');
+        if (logMessage) {
+          let match = /INFO|WARN|ERROR|DEBUG/.exec(logMessage.innerText);
+          if (match) logGroup.classList.add(match[0]);
+        }
+      }
+    }
+  });
+}
+
+colorize();

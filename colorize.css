@@ -1,0 +1,4 @@
+.cwdb-log-viewer-table-row-group.WARN { background: #FFCC80 !important; }
+.cwdb-log-viewer-table-row-group.INFO { background: #81D4FA !important; }
+.cwdb-log-viewer-table-row-group.DEBUG { background: #B0BEC5 !important; }
+.cwdb-log-viewer-table-row-group.ERROR { background: #EF9A9A !important; }
